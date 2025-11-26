@@ -1,3 +1,3 @@
-from load import Load
+from .load import Load
 
 __all__ = ["Load"]

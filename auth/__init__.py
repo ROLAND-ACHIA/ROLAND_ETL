@@ -1,3 +1,3 @@
-"""Unified authentication for CDSE and WEkEO."""
-from auth import get_token
-__all__ = ["get_token"]
+from .auth import get_cdse_token, get_token
+
+__all__ = ["get_cdse_token", "get_token"]

@@ -1,18 +1,38 @@
 import os
+from pathlib import Path
 
-BASE_DIR = os.getenv("BASE_DIR")
-RAW_DATA_DIR = os.path.join(BASE_DIR, "data/raw")
-PROCESSED_DATA_DIR = os.path.join(BASE_DIR, "data/processed")
+# Automatically set BASE_DIR to the ROLAND_ETL root directory
+BASE_DIR = str(Path(__file__).resolve().parent.parent)
+
+# Define ETL Results directory in the parent folder
+ETL_RESULTS_DIR = "/home/student/Documents/NMD project/ETL_Results"
+RAW_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "raw")
+PROCESSED_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "processed")
+
+# AOI shapefile path (inside ROLAND_ETL package)
 AOI_ZIP_PATH = os.path.join(BASE_DIR, "Shape files_AOI/Abong-Mbang_WH.zip")
 
+# Create directories if they don't exist
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
 
+# CDSE API Credentials (for Sentinel-2)
 CDSE_USERNAME = os.getenv("CDSE_USERNAME", "rolandachia7@gmail.com")
 CDSE_PASSWORD = os.getenv("CDSE_PASSWORD", "AChia672083022@")
 
-WEKEO_USERNAME = os.getenv("WEKEO_USERNAME", "achia10")
-WEKEO_PASSWORD = os.getvenv("WEKEO_PASSWORD", "AChia672083022@")
+# CDS API Credentials (for ERA5 climate data)
+# These are read from ~/.cdsapirc file by the cdsapi library
+CDS_URL = os.getenv("CDS_URL", "https://cds.climate.copernicus.eu/api")
+CDS_API_KEY = os.getenv("CDS_API_KEY", "70fc350f-0222-4fcb-ac82-1b9389025a21")
 
+# Date range for data extraction
 START_DATE = os.getenv("START_DATE", "2024-01-01T00:00:00Z")
 END_DATE = os.getenv("END_DATE", "2024-12-31T23:59:59Z")
+
+# ERA5 variables to download
+ERA5_VARIABLES = {
+    'temperature': '2m_temperature',
+    'precipitation': 'total_precipitation',
+    'humidity': '2m_dewpoint_temperature',  # Used to calculate relative humidity
+    'soil_moisture': 'volumetric_soil_water_layer_1'  # 0-7cm depth
+}

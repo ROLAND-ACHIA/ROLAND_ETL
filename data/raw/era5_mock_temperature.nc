@@ -1,0 +1,1 @@
+Mock temperature data for demonstration.
