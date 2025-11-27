@@ -21,18 +21,18 @@ CDSE_USERNAME = os.getenv("CDSE_USERNAME", "rolandachia7@gmail.com")
 CDSE_PASSWORD = os.getenv("CDSE_PASSWORD", "AChia672083022@")
 
 # CDS API Credentials (for ERA5 climate data)
-# These are read from ~/.cdsapirc file by the cdsapi library
 CDS_URL = os.getenv("CDS_URL", "https://cds.climate.copernicus.eu/api")
 CDS_API_KEY = os.getenv("CDS_API_KEY", "70fc350f-0222-4fcb-ac82-1b9389025a21")
 
 # Date range for data extraction
-START_DATE = os.getenv("START_DATE", "2024-01-01T00:00:00Z")
+# Using December 2024 to match available Sentinel-2 imagery
+START_DATE = os.getenv("START_DATE", "2024-12-01T00:00:00Z")
 END_DATE = os.getenv("END_DATE", "2024-12-31T23:59:59Z")
 
 # ERA5 variables to download
 ERA5_VARIABLES = {
     'temperature': '2m_temperature',
     'precipitation': 'total_precipitation',
-    'humidity': '2m_dewpoint_temperature',  # Used to calculate relative humidity
-    'soil_moisture': 'volumetric_soil_water_layer_1'  # 0-7cm depth
+    'humidity': '2m_dewpoint_temperature',
+    'soil_moisture': 'volumetric_soil_water_layer_1'
 }
