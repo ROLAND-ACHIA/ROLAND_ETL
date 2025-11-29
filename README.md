@@ -16,3 +16,4 @@ etl/
 ├── load/ → Result export and summary generation
 ├── utils/ → Configuration, logging, and shared helpers
 └── main.py → Main pipeline orchestrator
+└── __init__.py
