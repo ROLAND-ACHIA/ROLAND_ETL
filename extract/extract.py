@@ -33,7 +33,7 @@ class Extract:
             response = requests.post(auth_url, data=data, timeout=30)
             response.raise_for_status()
             self.cdse_token = response.json()["access_token"]
-            self.logger.info("✅ Token refreshed")
+            self.logger.info(" Token refreshed")
         except Exception as e:
             self.logger.error(f"Failed to refresh token: {e}")
 
@@ -53,11 +53,11 @@ class Extract:
             raise FileNotFoundError("No .shp file found")
         aoi = gpd.read_file(shp_files[0])
         bbox = aoi.to_crs(epsg=4326).total_bounds
-        self.logger.info(f"✅ AOI extracted: {os.path.basename(shp_files[0])}")
+        self.logger.info(f"AOI extracted: {os.path.basename(shp_files[0])}")
         self.logger.info(f"   Bounding box: {bbox}")
         return aoi, bbox
 
-    def get_sentinel2(self, bbox, max_images=10):
+    def get_sentinel2(self, bbox, max_images=32):
         if not self.cdse_token:
             self.logger.warning("CDSE token missing")
             return []
@@ -74,7 +74,7 @@ class Extract:
                     pass
         
         if existing_s2_folders:
-            self.logger.info(f"✅ Found {len(existing_s2_folders)} existing Sentinel-2 products")
+            self.logger.info(f"Found {len(existing_s2_folders)} existing Sentinel-2 products")
             return existing_s2_folders
 
         self.logger.info(f"Searching for Sentinel-2 products...")
@@ -143,11 +143,11 @@ class Extract:
                         zip_ref.extractall(RAW_DATA_DIR)
                     os.remove(product_zip)
                     
-                    self.logger.info(f"  ✅ Done")
+                    self.logger.info(f" Done")
                     downloaded_products.append({'path': product_folder, 'date': product_date, 'name': product_name})
                     
                 except Exception as e:
-                    self.logger.error(f"  ❌ Error: {e}")
+                    self.logger.error(f" Error: {e}")
                     if os.path.exists(product_zip):
                         os.remove(product_zip)
             
@@ -161,7 +161,7 @@ class Extract:
         output_file = os.path.join(RAW_DATA_DIR, f"era5_{variable_name}_{start_date.strftime('%Y%m%d')}.nc")
         
         if os.path.exists(output_file):
-            self.logger.info(f"✅ ERA5 {variable_name} exists")
+            self.logger.info(f"ERA5 {variable_name} exists")
             return output_file
         
         self.logger.info(f"Downloading ERA5 {variable_name}...")
@@ -182,7 +182,7 @@ class Extract:
             }
             
             c.retrieve('reanalysis-era5-single-levels', request, output_file)
-            self.logger.info(f"✅ Downloaded")
+            self.logger.info(f"Downloaded")
             return output_file
         except Exception as e:
             self.logger.error(f"Error: {e}")

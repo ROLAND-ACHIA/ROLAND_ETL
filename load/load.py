@@ -45,12 +45,12 @@ class Load:
                 if value is not None and name != 'CROP_STRESS':
                     filepath = os.path.join(PROCESSED_DATA_DIR, f"{name.lower()}_{date}_{timestamp}.npy")
                     np.save(filepath, value)
-                    self.logger.info(f"✅ Saved {name} ({date}) -> {filepath}")
+                    self.logger.info(f"Saved {name} ({date}) -> {filepath}")
         
         # Create combined CSV for ML
         self._create_combined_csv(indices_by_date, climate_stats, timestamp)
         
-        self.logger.info("✅ All ETL results saved successfully.")
+        self.logger.info(" All ETL results saved successfully.")
 
     def _create_combined_csv(self, indices_by_date: dict, climate_stats: dict, timestamp: str):
         """
@@ -164,7 +164,7 @@ class Load:
         csv_path = os.path.join(PROCESSED_DATA_DIR, f"combined_data_{timestamp}.csv")
         df.to_csv(csv_path, index=False)
         
-        self.logger.info(f"✅ Combined CSV saved -> {csv_path}")
+        self.logger.info(f" Combined CSV saved -> {csv_path}")
         self.logger.info(f"   Shape: {df.shape[0]} rows × {df.shape[1]} columns")
         
         # Print summary statistics
@@ -197,4 +197,4 @@ class Load:
                 f.write(f"{date}: NDVI={indices.get('NDVI', 'N/A'):.3f}, ")
                 f.write(f"Crop Stress={indices.get('CROP_STRESS', 'N/A'):.2f}\n")
         
-        self.logger.info(f"✅ Sentinel-2 dates summary saved -> {summary_path}")
+        self.logger.info(f" Sentinel-2 dates summary saved -> {summary_path}")

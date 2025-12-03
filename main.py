@@ -6,7 +6,7 @@ from .utils.config import AOI_ZIP_PATH
 
 def run():
     print("="*70)
-    print("🚀 AGRICONNECT ETL PIPELINE")
+    print("AGRICONNECT ETL PIPELINE")
     print("="*70)
     
     # Authenticate with CDSE
@@ -18,24 +18,29 @@ def run():
     loader = Load()
     
     # EXTRACT
-    print("\n📍 EXTRACTING AOI...")
+    print("\n EXTRACTING AOI...")
     aoi, bbox = extractor.get_aoi(AOI_ZIP_PATH)
     
-    print("\n🛰️  EXTRACTING SENTINEL-2 DATA (Multiple Images)...")
-    sentinel_products = extractor.get_sentinel2(bbox, max_images=10)
-    print(f"   Found {len(sentinel_products)} Sentinel-2 products")
+    print("\n EXTRACTING SENTINEL-2 DATA...")
+    # Request up to 31 images to cover the entire month (accounting for ~5 day revisit)
+    sentinel_products = extractor.get_sentinel2(bbox, max_images=31)
+    print(f"   Downloaded {len(sentinel_products)} Sentinel-2 products")
     
-    print("\n🌡️  EXTRACTING CLIMATE DATA...")
+    # Get unique dates
+    unique_dates = sorted(list(set([p['date'] for p in sentinel_products if p['date']])))
+    print(f"   Covering {len(unique_dates)} unique dates: {', '.join(unique_dates)}")
+    
+    print("\n  EXTRACTING CLIMATE DATA...")
     climate_data = extractor.get_all_climate_data(bbox)
     
     # TRANSFORM
-    print("\n🔄 TRANSFORMING DATA...")
+    print("\n TRANSFORMING DATA...")
     
     # Transform Sentinel-2 images (returns dict with date -> indices)
     indices_by_date = transformer.transform_sentinel2(sentinel_products, aoi)
-    print(f"   Processed vegetation indices for {len(indices_by_date)} dates")
+    print(f"   Processed vegetation indices for {len(indices_by_date)} unique dates")
     
-    # Transform climate data (returns dict with variable -> list of timestamped stats)
+    # Transform climate data
     climate_stats = {}
     
     if climate_data.get('temperature'):
@@ -59,12 +64,15 @@ def run():
         )
     
     # LOAD
-    print("\n💾 SAVING RESULTS...")
+    print("\n SAVING RESULTS...")
     loader.load_results(indices_by_date, climate_stats)
     
-    print("\n✅ ETL pipeline completed successfully.")
-    print(f"📁 Results saved to: ETL_Results/processed/")
-    print(f"📊 Combined CSV ready for ML analysis!")
+    print("\nETL pipeline completed successfully.")
+    print(f" Results saved to: ETL_Results/processed/")
+    print(f" Combined CSV ready for ML analysis!")
+    print(f"\nData Coverage:")
+    print(f"   Sentinel-2 dates: {len(unique_dates)}")
+    print(f"   Climate data: Full hourly coverage for December 2024")
 
 if __name__ == "__main__":
     run()

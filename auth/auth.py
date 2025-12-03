@@ -28,7 +28,7 @@ def get_cdse_token():
     Exception
         If authentication fails.
     """
-    logger.info("🔑 Authenticating with CDSE...")
+    logger.info("Authenticating with CDSE...")
     
     auth_url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
     
@@ -43,10 +43,10 @@ def get_cdse_token():
         response = requests.post(auth_url, data=data, timeout=30)
         response.raise_for_status()
         token = response.json()["access_token"]
-        logger.info("✅ CDSE authentication successful")
+        logger.info(" CDSE authentication successful")
         return token
     except requests.exceptions.RequestException as e:
-        logger.error(f"❌ CDSE authentication failed: {e}")
+        logger.error(f" CDSE authentication failed: {e}")
         raise Exception(f"CDSE authentication failed: {e}")
 
 

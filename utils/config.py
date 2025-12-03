@@ -24,13 +24,7 @@ CDSE_PASSWORD = os.getenv("CDSE_PASSWORD", "AChia672083022@")
 CDS_URL = os.getenv("CDS_URL", "https://cds.climate.copernicus.eu/api")
 CDS_API_KEY = os.getenv("CDS_API_KEY", "70fc350f-0222-4fcb-ac82-1b9389025a21")
 
-# Import for extract module
-from pathlib import Path as _Path
-if __name__ != "__main__":
-    pass
-
-# Date range for data extraction
-# Using December 2024 to match available Sentinel-2 imagery
+# Date range for data extraction - Full December 2024
 START_DATE = os.getenv("START_DATE", "2024-12-01T00:00:00Z")
 END_DATE = os.getenv("END_DATE", "2024-12-31T23:59:59Z")
 
