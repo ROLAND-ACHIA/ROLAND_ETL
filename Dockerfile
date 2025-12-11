@@ -24,8 +24,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy ETL code
 COPY . /app/ROLAND_ETL/
 
-# Create output directories
-RUN mkdir -p /app/ETL_Results/raw /app/ETL_Results/processed
+# DON'T create directories here - let volumes handle it
+# This was the problem: RUN mkdir -p /app/ETL_Results/raw /app/ETL_Results/processed
 
 # Run ETL
 CMD ["python", "-m", "ROLAND_ETL.main"]

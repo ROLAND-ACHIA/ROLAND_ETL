@@ -4,17 +4,17 @@ from pathlib import Path
 # Automatically set BASE_DIR to the ROLAND_ETL root directory
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 
-# Define ETL Results directory in the parent folder
-ETL_RESULTS_DIR = "/home/student/Documents/NMD project/ETL_Results"
+# Define ETL Results directory - will be mounted from host
+ETL_RESULTS_DIR = os.getenv("ETL_RESULTS_DIR", "/app/ETL_Results")
 RAW_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "raw")
 PROCESSED_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "processed")
 
-# AOI shapefile path (inside ROLAND_ETL package)
-AOI_ZIP_PATH = os.path.join(BASE_DIR, "Shape files_AOI/Abong-Mbang_WH.zip")
-
-# Create directories if they don't exist
+# Create directories if they don't exist (in case not mounted)
 os.makedirs(RAW_DATA_DIR, exist_ok=True)
 os.makedirs(PROCESSED_DATA_DIR, exist_ok=True)
+
+# AOI shapefile path (inside ROLAND_ETL package)
+AOI_ZIP_PATH = os.path.join(BASE_DIR, "Shape files_AOI/Abong-Mbang_WH.zip")
 
 # CDSE API Credentials (for Sentinel-2)
 CDSE_USERNAME = os.getenv("CDSE_USERNAME", "rolandachia7@gmail.com")

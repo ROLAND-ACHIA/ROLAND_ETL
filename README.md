@@ -1,4 +1,4 @@
-# ROLAND ETL Pipeline 🌾
+# ROLAND ETL Pipeline 
 
 **Smart Agriculture Data Processing Pipeline**
 
@@ -8,30 +8,70 @@ Automatically downloads and processes satellite imagery and climate data for agr
 
 ## �� What You Get
 
-- **Sentinel-2 satellite images** → Vegetation health indicators (NDVI, EVI, etc.)
-- **ERA5 climate data** → Temperature, rainfall, humidity, soil moisture
-- **Output**: Ready-to-use CSV file for machine learning
+- **Sentinel-2 satellite images**  Vegetation health indicators (NDVI, EVI, LAI, etc.)
+- **ERA5 climate data**  Temperature, rainfall, humidity, soil moisture
+- **Output**: Ready-to-use CSV file for machine learning and analysis
 
 ---
 
-## 🚀 Quick Start (3 Steps)
+## Quick Start Guide
 
-### Step 1: Get Your API Keys
+### Step 1: Get Your API Credentials
 
-#### A. Copernicus Data Space (for satellite images)
-1. Register: https://dataspace.copernicus.eu/
-2. Save your email and password
+You need TWO sets of credentials:
 
-#### B. Climate Data Store (for weather data)
-1. Register: https://cds.climate.copernicus.eu/user/register
-2. Login and go to: https://cds.climate.copernicus.eu/user
-3. Copy your API key (looks like: `12345:abcd-efgh-1234-5678`)
-4. Accept the license: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
-   (Click "Download data" tab → Accept terms)
+#### A. Copernicus Data Space Ecosystem (CDSE) - For Satellite Images
+1. Go to: https://dataspace.copernicus.eu/
+2. Click "Register" → Create account
+3. **Save your email and password** - you'll need these!
 
-### Step 2: Setup Your Computer
+#### B. Climate Data Store (CDS) - For Weather Data
+1. Go to: https://cds.climate.copernicus.eu/user/register
+2. Create account and login
+3. Go to your profile: https://cds.climate.copernicus.eu/user
+4. **Copy your API key** - it looks like: `12345:abcd-1234-5678-efgh`
+5. **Accept the license**: 
+   - Go to: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
+   - Click "Download data" tab
+   - Check the box to accept terms
 
-Create a file called `.cdsapirc` in your home directory:
+---
+
+### Step 2: Configure Your Credentials
+
+#### Option A: Edit the Configuration File (Recommended)
+
+Open `utils/config.py` and update these lines:
+```python
+# CDSE API Credentials (for Sentinel-2)
+CDSE_USERNAME = os.getenv("CDSE_USERNAME", "YOUR_EMAIL_HERE")
+CDSE_PASSWORD = os.getenv("CDSE_PASSWORD", "YOUR_PASSWORD_HERE")
+```
+
+**Example:**
+```python
+CDSE_USERNAME = os.getenv("CDSE_USERNAME", "john.doe@example.com")
+CDSE_PASSWORD = os.getenv("CDSE_PASSWORD", "MySecurePass123")
+```
+
+#### Option B: Use Environment Variables (When Running Docker)
+
+Keep the config file as is, and provide credentials when running:
+```bash
+docker run --rm \
+    -v "$(pwd)/ETL_Results:/app/ETL_Results" \
+    -v "$(pwd)/Shape files_AOI:/app/ROLAND_ETL/Shape files_AOI" \
+    -v "$HOME/.cdsapirc:/root/.cdsapirc:ro" \
+    -e CDSE_USERNAME="your_email@example.com" \
+    -e CDSE_PASSWORD="your_password" \
+    roland-etl
+```
+
+---
+
+### Step 3: Setup CDS API Key
+
+Create a file called `.cdsapirc` in your home directory with your CDS API key:
 
 **Linux/Mac:**
 ```bash
@@ -41,162 +81,141 @@ key: YOUR_UID:YOUR_API_KEY
 EOL
 ```
 
-**Windows:** Create `C:\Users\YourName\.cdsapirc` with:
+**Windows:**
+Create a file: `C:\Users\YourName\.cdsapirc`
+
+Content:
 ```
 url: https://cds.climate.copernicus.eu/api
 key: YOUR_UID:YOUR_API_KEY
 ```
 
-### Step 3: Run the Pipeline
-```bash
-# 1. Build the container (one time only)
-docker build -t roland-etl .
-
-# 2. Run the pipeline
-docker run --rm \
-    -v "$(pwd)/ETL_Results:/app/ETL_Results" \
-    -v "$(pwd)/Shape_files_AOI:/app/ROLAND_ETL/Shape_files_AOI" \
-    -v "$HOME/.cdsapirc:/root/.cdsapirc:ro" \
-    -e CDSE_USERNAME="your_email@example.com" \
-    -e CDSE_PASSWORD="your_password" \
-    roland-etl
-
-# Results will be in: ETL_Results/processed/agriconnect_data_*.csv
+ 
+**Example:**
+```
+url: https://cds.climate.copernicus.eu/api
+key: 12345:abcd-efgh-1234-5678-ijkl-mnop
 ```
 
 ---
 
-## 📁 What You Need
+### Step 4: Configure Your Area and Date Range
 
-### Required Files
+Open `utils/config.py` and modify these settings:
 
-1. **Your shapefile** (area of interest) → Put in `Shape_files_AOI/` folder as a ZIP file
-2. **API credentials** (from Step 1)
+**Change the dates** to your desired time period.
 
-### Folder Structure
+#### Set Date Range
+```python
+# Date range for data extraction
+START_DATE = os.getenv("START_DATE", "2024-12-01T00:00:00Z")
+END_DATE = os.getenv("END_DATE", "2024-12-31T23:59:59Z")
+```
+
+#### Set Your Shapefile (Area of Interest)
+```python
+# AOI shapefile path (inside ROLAND_ETL package)
+AOI_ZIP_PATH = os.path.join(BASE_DIR, "Shape files_AOI/Abong-Mbang_WH.zip")
+```
+
+**Replace `Abong-Mbang_WH.zip`** with your shapefile name.
+
+**Steps:**
+1. Put your shapefile ZIP in the `Shape files_AOI/` folder
+2. Update the filename in config.py
+
+
+### Step 5: Prepare Your Files
+
+Make sure you have:
 ```
 ROLAND_ETL/
-├── Shape_files_AOI/
-│   └── your_area.zip          ← Your shapefile here
-├── ETL_Results/                ← Results appear here
-│   ├── raw/                    (downloaded data)
-│   └── processed/              (final CSV file)
-├── Dockerfile
-├── requirements.txt
-└── README.md
+├── Shape files_AOI/
+│   └── YOUR_SHAPEFILE.zip     ← Your area shapefile here
+├── ETL_Results/                ← Create this folder (empty)
+│   ├── raw/
+│   └── processed/
+├── utils/
+│   └── config.py              ← Edit this file (Step 4)
+└── Dockerfile
+```
+
+Create the ETL_Results folder:
+```bash
+mkdir -p ETL_Results/raw
+mkdir -p ETL_Results/processed
 ```
 
 ---
 
-## ⚙️ Configuration
+### Step 6: Build and Run
 
-### Change Date Range
-
-Edit `utils/config.py` before building:
-```python
-START_DATE = "2024-12-01T00:00:00Z"
-END_DATE = "2024-12-31T23:59:59Z"
+#### Build the Docker Container (one time only)
+```bash
+cd /path/to/ROLAND_ETL
+docker build -t roland-etl .
 ```
 
-Or use environment variables when running:
+#### Run the Pipeline
 ```bash
 docker run --rm \
     -v "$(pwd)/ETL_Results:/app/ETL_Results" \
-    -v "$(pwd)/Shape_files_AOI:/app/ROLAND_ETL/Shape_files_AOI" \
+    -v "$(pwd)/Shape files_AOI:/app/ROLAND_ETL/Shape files_AOI" \
+    -v "$HOME/.cdsapirc:/root/.cdsapirc:ro" \
+    roland-etl
+```
+
+**Note:** If you didn't edit `config.py` in Step 2, add your credentials here:
+```bash
+docker run --rm \
+    -v "$(pwd)/ETL_Results:/app/ETL_Results" \
+    -v "$(pwd)/Shape files_AOI:/app/ROLAND_ETL/Shape files_AOI" \
     -v "$HOME/.cdsapirc:/root/.cdsapirc:ro" \
     -e CDSE_USERNAME="your_email@example.com" \
     -e CDSE_PASSWORD="your_password" \
-    -e START_DATE="2024-01-01T00:00:00Z" \
-    -e END_DATE="2024-01-31T23:59:59Z" \
     roland-etl
 ```
 
-### Change Your Area (Shapefile)
-
-1. Replace the ZIP file in `Shape_files_AOI/` folder
-2. Update the path in `utils/config.py`:
-```python
-AOI_ZIP_PATH = os.path.join(BASE_DIR, "Shape_files_AOI/YOUR_FILE.zip")
-```
-3. Rebuild: `docker build -t roland-etl .`
-
 ---
 
-## 📊 Output Data
+##  Understanding the Output
 
-You'll get a CSV file with these columns:
+### What the Pipeline Does
 
-| What | Description |
-|------|-------------|
-| `timestamp` | Date and time (hourly) |
-| `temperature_mean` | Temperature (°C) |
-| `precipitation_mean` | Rainfall (mm) |
-| `humidity_mean` | Humidity (°C dewpoint) |
-| `soil_moisture_mean` | Soil water content |
-| `NDVI` | Vegetation health (0-1) |
-| `EVI` | Enhanced vegetation index |
-| `CROP_STRESS` | Stress level (0=healthy, 1=stressed) |
+1. **Downloads Satellite Images** (5-10 minutes per image)
+   - Sentinel-2 has ~5-day revisit time
+   - For 1 month, you'll get 6-8 images
+   - Images saved in: `ETL_Results/raw/`
 
-**Location**: `ETL_Results/processed/agriconnect_data_YYYYMMDD_HHMMSS.csv`
+2. **Downloads Climate Data** (10-20 minutes)
+   - Hourly temperature, rainfall, humidity, soil moisture
+   - Covers your entire date range
+   - Data saved in: `ETL_Results/raw/era5_*.nc`
 
----
+3. **Processes Data** (1-2 minutes)
+   - Calculates vegetation indices
+   - Computes climate statistics
+   - Matches data by date
 
-## ❓ Troubleshooting
+4. **Creates CSV File**
+   - Location: `ETL_Results/processed/agriconnect_data_TIMESTAMP.csv`
+   - Ready for Excel, Python, R, or ML tools
 
-### "Error 401: Unauthorized" (Satellite download)
-- Check your CDSE email and password are correct
-- Make sure you're registered at https://dataspace.copernicus.eu/
+ 
+ 
 
-### "CDS API error" (Climate download)
-- Check your `.cdsapirc` file exists in your home directory
-- Verify your API key is correct
-- Did you accept the ERA5 license?
+ 
+ 
+ 
 
-### "No shapefile found"
-- Make sure your ZIP file is in `Shape_files_AOI/` folder
-- Check the filename matches in `utils/config.py`
-
-### Pipeline takes too long
-- Normal! Downloading satellite images takes 5-10 minutes each
-- A full month (10 images) can take 1-2 hours
-
----
-
-## 🎯 Example Run
-```bash
-# Complete example
-cd /home/student/Documents/NMD\ project/ROLAND_ETL
-
-# Build
-docker build -t roland-etl .
-
-# Run for December 2024
-docker run --rm \
-    -v "$(pwd)/ETL_Results:/app/ETL_Results" \
-    -v "$(pwd)/Shape_files_AOI:/app/ROLAND_ETL/Shape_files_AOI" \
-    -v "$HOME/.cdsapirc:/root/.cdsapirc:ro" \
-    -e CDSE_USERNAME="rolandachia7@gmail.com" \
-    -e CDSE_PASSWORD="YourPassword123" \
-    roland-etl
-
-# Check results
-ls -lh ETL_Results/processed/
-```
-
----
-
-## 📧 Support
-
-**Author**: Roland Achia  
-**Email**: rolandachia7@gmail.com  
-**Organization**: AIMS Cameroon
-
-For issues, email me with:
-- Your error message
-- The command you ran
-- Your operating system
-
----
-
-**Version**: 1.0.0  
-**Last Updated**: December 2024
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

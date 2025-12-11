@@ -341,7 +341,7 @@ def transform_sentinel2(product_folder, aoi):
 
 def transform_temperature(nc_path, aoi):
     """Process temperature data and compute statistics."""
-    print("\n🔄 TRANSFORM: Processing temperature data...")
+    print("\n TRANSFORM: Processing temperature data...")
 
     try:
         ds = xr.open_dataset(nc_path)
