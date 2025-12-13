@@ -15,6 +15,13 @@ ENV GDAL_CONFIG=/usr/bin/gdal-config \
     PYTHONPATH=/app \
     PYTHONUNBUFFERED=1
 
+ENV CDSE_USERNAME="your_username" \
+    CDSE_PASSWORD="YourStrongPassword" \
+    CDS_URL="https://cds.climate.copernicus.eu/api"\
+    CDS_API_KEY="YourCDSAPIKEY"\
+    START_DATE="2024-12-01T00:00:00Z"\
+    END_DATE="2024-12-31T23:59:59Z"
+
 WORKDIR /app
 
 # Install Python packages

@@ -1,4 +1,4 @@
-# ROLAND ETL Pipeline 
+# ROLAND ETL Pipeline
 
 **Smart Agriculture Data Processing Pipeline**
 
@@ -30,7 +30,7 @@ You need TWO sets of credentials:
 2. Create account and login
 3. Go to your profile: https://cds.climate.copernicus.eu/user
 4. **Copy your API key** - it looks like: `12345:abcd-1234-5678-efgh`
-5. **Accept the license**: 
+5. **Accept the license**:
    - Go to: https://cds.climate.copernicus.eu/datasets/reanalysis-era5-single-levels
    - Click "Download data" tab
    - Check the box to accept terms
@@ -90,7 +90,7 @@ url: https://cds.climate.copernicus.eu/api
 key: YOUR_UID:YOUR_API_KEY
 ```
 
- 
+
 **Example:**
 ```
 url: https://cds.climate.copernicus.eu/api
@@ -135,8 +135,14 @@ ROLAND_ETL/
 ├── ETL_Results/                ← Create this folder (empty)
 │   ├── raw/
 │   └── processed/
-├── utils/
-│   └── config.py              ← Edit this file (Step 4)
+├── app/
+│   ├── auth/
+│   ├── utils/
+│   ├── load/
+│   ├── extract/
+│   ├── transform/
+│   ├── __init__.py
+│   └── main.py
 └── Dockerfile
 ```
 
@@ -201,21 +207,21 @@ docker run --rm \
    - Location: `ETL_Results/processed/agriconnect_data_TIMESTAMP.csv`
    - Ready for Excel, Python, R, or ML tools
 
- 
- 
 
- 
- 
- 
 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
