@@ -168,7 +168,7 @@ class Load:
         self.logger.info(f"   Shape: {df.shape[0]} rows × {df.shape[1]} columns")
         
         # Print summary statistics
-        self.logger.info(f"\n📊 Data Summary:")
+        self.logger.info(f"\n Data Summary:")
         self.logger.info(f"   Time range: {df['timestamp'].min()} to {df['timestamp'].max()}")
         self.logger.info(f"   Date range: {df['date'].min()} to {df['date'].max()}")
         self.logger.info(f"   Total records: {len(df)}")

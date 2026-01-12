@@ -1,11 +1,13 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
+load_dotenv()
 # Automatically set BASE_DIR to the ROLAND_ETL root directory
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 
 # Define ETL Results directory - will be mounted from host
-ETL_RESULTS_DIR = os.getenv("ETL_RESULTS_DIR", "/app/ETL_Results")
+ETL_RESULTS_DIR = os.path.expanduser("~/Documents/NMD project/ETL_Results")
 RAW_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "raw")
 PROCESSED_DATA_DIR = os.path.join(ETL_RESULTS_DIR, "processed")
 

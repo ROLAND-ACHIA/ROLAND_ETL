@@ -1,11 +1,16 @@
 FROM python:3.11-slim
 
-# Install system dependencies
+LABEL maintainer="Roland Achia <rolandachia7@gmail.com>"
+LABEL description="AgriConnect ETL Dashboard - Multi-Location Precision Agriculture Data Pipeline"
+
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
     gdal-bin \
     libgdal-dev \
     libspatialindex-dev \
     gcc \
+    g++ \
     && rm -rf /var/lib/apt/lists/*
 
 # Set GDAL environment
@@ -28,11 +33,15 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy ETL code
-COPY . /app/ROLAND_ETL/
+COPY . /app/ROLAND_ETL
 
-# DON'T create directories here - let volumes handle it
-# This was the problem: RUN mkdir -p /app/ETL_Results/raw /app/ETL_Results/processed
+RUN mkdir -p /app/ETL_Results/raw /app/ETL_Results/processed /app/ETL_Results/uploads
 
-# Run ETL
-CMD ["python", "-m", "ROLAND_ETL.main"]
+ENV PYTHONPATH=/app
+ENV ETL_RESULTS_DIR=/app/ETL_Results
+
+EXPOSE 5000
+
+WORKDIR /app
+
+CMD ["python", "-m", "ROLAND_ETL.app"]
