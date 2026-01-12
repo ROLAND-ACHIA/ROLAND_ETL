@@ -1,65 +1,72 @@
 """
-Generic authentication module for ETL.
+Authentication module for CDSE platform.
 
-Supports:
-- Copernicus Data Space Ecosystem (CDSE)
-- WEkEO platform
+Handles token generation for Copernicus Data Space Ecosystem (CDSE).
 """
 
 import requests
 from ..utils.config import (
-    CDSE_USERNAME, CDSE_PASSWORD,
-    WEKEO_USERNAME, WEKEO_PASSWORD
+    CDSE_USERNAME,
+    CDSE_PASSWORD,
 )
+from ..utils.logging import setup_logger
+
+logger = setup_logger("auth")
 
 
-def get_token(provider: str):
+def get_cdse_token():
     """
-    Authenticate with the given provider and return an access token.
-
-    Parameters
-    ----------
-    provider : str
-        One of {"cdse", "wekeo"}.
+    Authenticates with CDSE and retrieves an access token.
 
     Returns
     -------
-    str or None
-        Access token string if successful, otherwise None.
+    str
+        Access token for CDSE API.
+
+    Raises
+    ------
+    Exception
+        If authentication fails.
     """
-    provider = provider.lower()
-
-    if provider == "cdse":
-        print("🔑 Authenticating with CDSE...")
-        url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
-        data = {
-            "grant_type": "password",
-            "username": CDSE_USERNAME,
-            "password": CDSE_PASSWORD,
-            "client_id": "cdse-public"
-        }
-    elif provider == "wekeo":
-        print("🔑 Authenticating with WEkEO...")
-        url = "https://gateway.prod.wekeo2.eu/hda-broker/gettoken"
-        data = {"username": WEKEO_USERNAME, "password": WEKEO_PASSWORD}
-    else:
-        raise ValueError(f"Unsupported provider: {provider}")
-
+    logger.info("Authenticating with CDSE...")
+    
+    auth_url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
+    
+    data = {
+        "grant_type": "password",
+        "username": CDSE_USERNAME,
+        "password": CDSE_PASSWORD,
+        "client_id": "cdse-public",
+    }
+    
     try:
-        # CDSE uses form data; WEkEO expects JSON
-        response = requests.post(url, data=data if provider == "cdse" else None,
-                                 json=data if provider == "wekeo" else None,
-                                 timeout=60)
+        response = requests.post(auth_url, data=data, timeout=30)
         response.raise_for_status()
-        token = response.json().get("access_token")
-
-        if not token:
-            print(f"⚠️ Authentication failed: no token returned from {provider}")
-            return None
-
-        print(f"✅ {provider.upper()} authentication successful")
+        token = response.json()["access_token"]
+        logger.info(" CDSE authentication successful")
         return token
+    except requests.exceptions.RequestException as e:
+        logger.error(f" CDSE authentication failed: {e}")
+        raise Exception(f"CDSE authentication failed: {e}")
 
-    except Exception as e:
-        print(f"⚠️ {provider.upper()} authentication failed: {e}")
-        return None
+
+# Alias for backward compatibility
+def get_token(platform: str = "cdse"):
+    """
+    Get authentication token for the specified platform.
+    
+    Parameters
+    ----------
+    platform : str
+        Platform name. Only 'cdse' is supported.
+        
+    Returns
+    -------
+    str
+        Access token
+    """
+    if platform.lower() == "cdse":
+        return get_cdse_token()
+    else:
+        logger.warning(f"Unknown platform: {platform}. Defaulting to CDSE.")
+        return get_cdse_token()

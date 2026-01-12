@@ -40,7 +40,7 @@ END_DATE = "2024-12-31T23:59:59Z"
 
 def get_cdse_token():
     """Get access token from Copernicus Data Space."""
-    print("🔑 Authenticating with CDSE...")
+    print(" Authenticating with CDSE...")
     url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
     data = {
         "grant_type": "password",
@@ -52,25 +52,25 @@ def get_cdse_token():
         r = requests.post(url, data=data, timeout=60)
         r.raise_for_status()
         token = r.json()["access_token"]
-        print("✅ CDSE authentication successful")
+        print("CDSE authentication successful")
         return token
     except Exception as e:
-        print(f"⚠️ CDSE authentication failed: {e}")
+        print(f" CDSE authentication failed: {e}")
         return None
 
 def get_wekeo_token():
     """Get access token from WEkEO."""
-    print("🔑 Authenticating with WEkEO...")
+    print(" Authenticating with WEkEO...")
     url = "https://gateway.prod.wekeo2.eu/hda-broker/gettoken"
     data = {"username": WEKEO_USERNAME, "password": WEKEO_PASSWORD}
     try:
         r = requests.post(url, json=data, timeout=60)
         r.raise_for_status()
         token = r.json()["access_token"]
-        print("✅ WEkEO authentication successful")
+        print(" WEkEO authentication successful")
         return token
     except Exception as e:
-        print(f"⚠️ WEkEO authentication failed: {e}")
+        print(f" WEkEO authentication failed: {e}")
         return None
 
 # ============================================================
@@ -79,7 +79,7 @@ def get_wekeo_token():
 
 def extract_aoi(zip_path):
     """Extract and load AOI shapefile."""
-    print("\n📦 EXTRACT: Loading AOI shapefile...")
+    print("\n EXTRACT: Loading AOI shapefile...")
 
     # Find or extract shapefile
     shp_files = []
@@ -97,7 +97,7 @@ def extract_aoi(zip_path):
 
     aoi = gpd.read_file(shp_files[0])
     bbox = aoi.to_crs(epsg=4326).total_bounds
-    print(f"✅ AOI loaded: {os.path.basename(shp_files[0])}")
+    print(f" AOI loaded: {os.path.basename(shp_files[0])}")
     print(f"   Bounding box: {bbox}")
     return aoi, bbox
 
@@ -107,7 +107,7 @@ def extract_aoi(zip_path):
 
 def extract_sentinel2(token, bbox):
     """Search and download Sentinel-2 data from CDSE."""
-    print("\n🛰️ EXTRACT: Sentinel-2 from CDSE...")
+    print("\n EXTRACT: Sentinel-2 from CDSE...")
 
     url = "https://catalogue.dataspace.copernicus.eu/odata/v1/Products"
     filter_query = (
@@ -127,13 +127,13 @@ def extract_sentinel2(token, bbox):
         products = r.json().get("value", [])
 
         if not products:
-            print("❌ No Sentinel-2 products found")
+            print(" No Sentinel-2 products found")
             return None
 
         product = products[0]
         product_id = product["Id"]
         product_name = product["Name"]
-        print(f"✅ Found: {product_name}")
+        print(f" Found: {product_name}")
 
         # Download
         download_url = f"https://zipper.dataspace.copernicus.eu/odata/v1/Products({product_id})/$value"
@@ -143,27 +143,27 @@ def extract_sentinel2(token, bbox):
 
         # Check if already downloaded
         if os.path.exists(zip_path):
-            print(f"✅ Product already downloaded")
+            print(f" Product already downloaded")
         else:
-            print(f"⬇️ Downloading...")
+            print(f" Downloading...")
             with requests.get(download_url, headers=headers, stream=True, timeout=300) as r:
                 r.raise_for_status()
                 with open(zip_path, "wb") as f:
                     for chunk in r.iter_content(8192):
                         f.write(chunk)
-            print(f"✅ Download complete")
+            print(f" Download complete")
 
         # Extract
         extract_folder = os.path.join(RAW_DATA_DIR, product_name)
         if not os.path.exists(extract_folder):
             with zipfile.ZipFile(zip_path, "r") as z:
                 z.extractall(extract_folder)
-            print(f"✅ Extracted to: {extract_folder}")
+            print(f" Extracted to: {extract_folder}")
 
         return extract_folder
 
     except Exception as e:
-        print(f"⚠️ Sentinel-2 extraction failed: {e}")
+        print(f" Sentinel-2 extraction failed: {e}")
         return None
 
 # ============================================================
@@ -201,11 +201,11 @@ def extract_temperature(token, bbox):
         job_id = r.json().get("jobId")
 
         if not job_id:
-            print("⚠️ Failed to submit job")
+            print(" Failed to submit job")
             return None
 
-        print(f"✅ Job submitted: {job_id}")
-        print("⏳ Monitoring job (max 10 minutes)...")
+        print(f" Job submitted: {job_id}")
+        print(" Monitoring job (max 10 minutes)...")
 
         # Monitor job
         status_url = f"https://gateway.prod.wekeo2.eu/hda-broker/api/v1/dataaccess/jobs/{job_id}"
@@ -217,10 +217,10 @@ def extract_temperature(token, bbox):
             status = r.json().get("status", "unknown")
 
             if status == "completed":
-                print("✅ Job completed!")
+                print(" Job completed!")
                 break
             elif status == "failed":
-                print(f"❌ Job failed")
+                print(f" Job failed")
                 return None
 
             time.sleep(20)
@@ -234,7 +234,7 @@ def extract_temperature(token, bbox):
         download_url = r.json().get("url")
 
         if not download_url:
-            print("⚠️ No download URL available")
+            print(" No download URL available")
             return None
 
         # Download file
@@ -244,11 +244,11 @@ def extract_temperature(token, bbox):
             for chunk in r.iter_content(8192):
                 f.write(chunk)
 
-        print(f"✅ Temperature data downloaded: {nc_path}")
+        print(f"Temperature data downloaded: {nc_path}")
         return nc_path
 
     except Exception as e:
-        print(f"⚠️ Temperature extraction failed: {e}")
+        print(f"Temperature extraction failed: {e}")
         return None
 
 # ============================================================
@@ -272,7 +272,7 @@ def transform_sentinel2(product_folder, aoi):
 
     required = ["B2", "B4", "B5", "B8", "B11"]
     if not all(b in band_map for b in required):
-        print(f"⚠️ Missing bands")
+        print(f" Missing bands")
         return None
 
     # Use B4 (10m resolution) as reference
@@ -331,7 +331,7 @@ def transform_sentinel2(product_folder, aoi):
         out_path = os.path.join(PROCESSED_DATA_DIR, f"{name.lower()}_index.tif")
         with rasterio.open(out_path, "w", **out_meta) as dst:
             dst.write(arr.astype(rasterio.float32), 1)
-        print(f"✅ Saved {name} → {out_path}")
+        print(f" Saved {name} → {out_path}")
 
     return indices
 
@@ -341,7 +341,7 @@ def transform_sentinel2(product_folder, aoi):
 
 def transform_temperature(nc_path, aoi):
     """Process temperature data and compute statistics."""
-    print("\n🔄 TRANSFORM: Processing temperature data...")
+    print("\n TRANSFORM: Processing temperature data...")
 
     try:
         ds = xr.open_dataset(nc_path)
@@ -354,7 +354,7 @@ def transform_temperature(nc_path, aoi):
                 break
 
         if not temp_var:
-            print(f"⚠️ Temperature variable not found. Available: {list(ds.variables)}")
+            print(f"Temperature variable not found. Available: {list(ds.variables)}")
             return None
 
         # Extract data
@@ -372,7 +372,7 @@ def transform_temperature(nc_path, aoi):
             "std_temp": float(temp_data.std())
         }
 
-        print(f"✅ Temperature stats computed:")
+        print(f" Temperature stats computed:")
         print(f"   Mean: {stats['mean_temp']:.2f}°C")
         print(f"   Min: {stats['min_temp']:.2f}°C")
         print(f"   Max: {stats['max_temp']:.2f}°C")
@@ -381,7 +381,7 @@ def transform_temperature(nc_path, aoi):
         return stats
 
     except Exception as e:
-        print(f"⚠️ Temperature processing failed: {e}")
+        print(f"Temperature processing failed: {e}")
         return None
 
 # ============================================================
@@ -390,7 +390,7 @@ def transform_temperature(nc_path, aoi):
 
 def load_results(sentinel_indices, temp_stats):
     """Save all results to CSV summary file."""
-    print("\n💾 LOAD: Saving results...")
+    print("\nLOAD: Saving results...")
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     summary_path = os.path.join(PROCESSED_DATA_DIR, f"etl_summary_{timestamp}.csv")
@@ -412,8 +412,8 @@ def load_results(sentinel_indices, temp_stats):
             for key, val in temp_stats.items():
                 writer.writerow([key, f"{val:.2f}", "°C"])
 
-    print(f"✅ Summary saved: {summary_path}")
-    print(f"\n📁 All processed files in: {PROCESSED_DATA_DIR}")
+    print(f"Summary saved: {summary_path}")
+    print(f"\n All processed files in: {PROCESSED_DATA_DIR}")
 
 # ============================================================
 # MAIN ETL PIPELINE
@@ -422,7 +422,7 @@ def load_results(sentinel_indices, temp_stats):
 def main_etl():
     """Execute complete ETL pipeline."""
     print("="*70)
-    print("🚀 INTEGRATED ETL PIPELINE: CDSE + WEkEO")
+    print(" INTEGRATED ETL PIPELINE: CDSE + WEkEO")
     print("="*70)
 
     # Authenticate
@@ -430,12 +430,12 @@ def main_etl():
     wekeo_token = get_wekeo_token()
 
     if not cdse_token:
-        print("❌ CDSE authentication failed - cannot continue")
+        print(" CDSE authentication failed - cannot continue")
         return
 
     # EXTRACT
     print("\n" + "="*70)
-    print("📥 EXTRACT PHASE")
+    print(" EXTRACT PHASE")
     print("="*70)
 
     aoi, bbox = extract_aoi(AOI_ZIP_PATH)
@@ -445,11 +445,11 @@ def main_etl():
     if wekeo_token:
         temp_file = extract_temperature(wekeo_token, bbox)
     else:
-        print("⚠️ Skipping temperature data (WEkEO auth failed)")
+        print(" Skipping temperature data (WEkEO auth failed)")
 
     # TRANSFORM
     print("\n" + "="*70)
-    print("🔄 TRANSFORM PHASE")
+    print(" TRANSFORM PHASE")
     print("="*70)
 
     sentinel_indices = None
@@ -462,14 +462,14 @@ def main_etl():
 
     # LOAD
     print("\n" + "="*70)
-    print("💾 LOAD PHASE")
+    print(" LOAD PHASE")
     print("="*70)
 
     load_results(sentinel_indices, temp_stats)
 
     # Summary
     print("\n" + "="*70)
-    print("✅ ETL PIPELINE COMPLETED!")
+    print(" ETL PIPELINE COMPLETED!")
     print("="*70)
     print(f"✓ Sentinel-2 indices: {'SUCCESS' if sentinel_indices else 'FAILED'}")
     print(f"✓ Temperature data: {'SUCCESS' if temp_stats else 'SKIPPED/FAILED'}")
