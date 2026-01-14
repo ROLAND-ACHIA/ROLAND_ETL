@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+ FROM python:3.11-slim
 
 LABEL maintainer="Roland Achia <rolandachia7@gmail.com>"
 LABEL description="AgriConnect ETL Dashboard - Multi-Location Precision Agriculture Data Pipeline"
@@ -31,7 +31,9 @@ WORKDIR /app
 
 # Install Python packages
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+
+# Install with increased timeout and retries
+RUN pip install --default-timeout=300 --retries 5 --no-cache-dir -r requirements.txt
 
 COPY . /app/ROLAND_ETL
 
