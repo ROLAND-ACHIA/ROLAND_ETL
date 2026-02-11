@@ -21,7 +21,7 @@ class Extract:
 
     def _refresh_token(self):
         """Refresh CDSE token if expired."""
-        self.logger.info("🔄 Refreshing CDSE token...")
+        self.logger.info(" Refreshing CDSE token...")
         auth_url = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
         data = {
             "grant_type": "password",
@@ -201,7 +201,7 @@ class Extract:
         return self._download_era5_variable('soil_moisture', ERA5_VARIABLES['soil_moisture'], bbox)
 
     def get_all_climate_data(self, bbox):
-        self.logger.info("📊 Downloading climate data...")
+        self.logger.info(" Downloading climate data...")
         return {
             'temperature': self.get_temperature(bbox),
             'precipitation': self.get_precipitation(bbox),

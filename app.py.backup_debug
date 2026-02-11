@@ -95,15 +95,6 @@ def process_single_location(location_name, shapefile_path, start_date, end_date)
             climate_stats['soil_moisture'] = transformer.transform_soil_moisture(climate_data['soil_moisture'], aoi)
         
         emit_log(f"Calculated climate statistics", 'success')
-        
-        # DEBUG: Check what climate_stats contains
-        emit_log(f"DEBUG: Climate stats keys: {list(climate_stats.keys())}", 'info')
-        for var_name, stats_list in climate_stats.items():
-            if stats_list:
-                emit_log(f"DEBUG: {var_name} has {len(stats_list)} timesteps", 'info')
-            else:
-                emit_log(f"DEBUG: {var_name} is None or empty!", 'warning')
-        
         emit_log(f"Creating combined dataset with forward-filled indices for {location_name}...", 'info')
         
         import pandas as pd

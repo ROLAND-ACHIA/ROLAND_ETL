@@ -13,23 +13,10 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Set GDAL environment
-ENV GDAL_CONFIG=/usr/bin/gdal-config \
-    CPLUS_INCLUDE_PATH=/usr/include/gdal \
-    C_INCLUDE_PATH=/usr/include/gdal \
-    PYTHONPATH=/app \
-    PYTHONUNBUFFERED=1
+ENV GDAL_CONFIG=/usr/bin/gdal-config
+ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
+ENV C_INCLUDE_PATH=/usr/include/gdal
 
-ENV CDSE_USERNAME="your_username" \
-    CDSE_PASSWORD="YourStrongPassword" \
-    CDS_URL="https://cds.climate.copernicus.eu/api"\
-    CDS_API_KEY="YourCDSAPIKEY"\
-    START_DATE="2024-12-01T00:00:00Z"\
-    END_DATE="2024-12-31T23:59:59Z"
-
-WORKDIR /app
-
-# Install Python packages
 COPY requirements.txt .
 
 # Install with increased timeout and retries

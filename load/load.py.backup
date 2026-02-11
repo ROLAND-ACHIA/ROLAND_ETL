@@ -1,3 +1,11 @@
+ """
+Loading module for saving processed data.
+
+Handles:
+- Saving to database (primary)
+- Saving CSV backup (optional)
+"""
+
 import os
 import pandas as pd
 import numpy as np
@@ -6,13 +14,33 @@ from ..utils.config import PROCESSED_DATA_DIR
 from ..utils.logging import setup_logger
 from ..database.database import Database
 
+
 class Load:
+    """
+    Handles loading/saving of processed data.
+    """
+
     def __init__(self, save_csv_backup=True):
         self.logger = setup_logger("load")
-        self.save_csv_backup_enabled = save_csv_backup
+        self.save_csv_backup = save_csv_backup
         self.db = Database()
-    
+
     def load_to_database(self, df, etl_run_id):
+        """
+        Load DataFrame directly to database.
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Combined dataframe with all locations
+        etl_run_id : str
+            Unique identifier for this ETL run
+            
+        Returns
+        -------
+        bool : Success status
+        int : Number of records inserted
+        """
         try:
             self.logger.info("Connecting to database...")
             if not self.db.connect():
@@ -33,6 +61,7 @@ class Load:
             else:
                 self.logger.error("No records were inserted into database")
                 return False, 0
+                
         except Exception as e:
             self.logger.error(f"Database load failed: {e}")
             import traceback
@@ -40,8 +69,22 @@ class Load:
             return False, 0
         finally:
             self.db.close()
-    
+
     def save_csv_backup(self, df, timestamp):
+        """
+        Save CSV backup file.
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Data to save
+        timestamp : str
+            Timestamp for filename
+            
+        Returns
+        -------
+        str : Path to saved CSV file
+        """
         try:
             output_filename = f"agriconnect_backup_{timestamp}.csv"
             output_path = os.path.join(PROCESSED_DATA_DIR, output_filename)
@@ -51,26 +94,45 @@ class Load:
         except Exception as e:
             self.logger.error(f"Failed to save CSV backup: {e}")
             return None
-    
+
     def load_results(self, df, etl_run_id, save_backup=None):
+        """
+        Main loading method - saves to database and optionally creates CSV backup.
+        
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            Combined dataframe with all locations
+        etl_run_id : str
+            Unique identifier for this ETL run
+        save_backup : bool, optional
+            Override default CSV backup setting
+            
+        Returns
+        -------
+        dict : Results including success status, records inserted, and backup path
+        """
         if df is None or len(df) == 0:
             self.logger.warning("No data to load")
             return {'success': False, 'records_inserted': 0, 'backup_path': None}
         
-        save_backup = save_backup if save_backup is not None else self.save_csv_backup_enabled
+        save_backup = save_backup if save_backup is not None else self.save_csv_backup
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
+        # Load to database (primary)
         self.logger.info("=" * 70)
         self.logger.info("LOADING DATA TO DATABASE")
         self.logger.info("=" * 70)
         
         db_success, records_inserted = self.load_to_database(df, etl_run_id)
         
+        # Save CSV backup if requested or if database load failed
         backup_path = None
         if save_backup or not db_success:
             self.logger.info("Creating CSV backup...")
             backup_path = self.save_csv_backup(df, timestamp)
         
+        # Return results
         results = {
             'success': db_success,
             'records_inserted': records_inserted,

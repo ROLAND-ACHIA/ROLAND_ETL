@@ -2,7 +2,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
+
 # Automatically set BASE_DIR to the ROLAND_ETL root directory
 BASE_DIR = str(Path(__file__).resolve().parent.parent)
 
@@ -37,3 +39,13 @@ ERA5_VARIABLES = {
     'humidity': '2m_dewpoint_temperature',
     'soil_moisture': 'volumetric_soil_water_layer_1'
 }
+
+# Database Configuration (Supabase PostgreSQL)
+DB_HOST = os.getenv("DB_HOST", "db.vbhkvbtijkecqshejnll.supabase.co")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_NAME = os.getenv("DB_NAME", "postgres")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "iloveshalomchow")
+
+# Build database connection string
+DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
